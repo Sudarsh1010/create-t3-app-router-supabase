@@ -1,5 +1,5 @@
 import { Loader } from "lucide-react";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
 import { CreatePost } from "~/components/posts/create";
 import {
@@ -10,10 +10,13 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 
-const PostsTable = dynamic(() => import("~/components/posts/table"), {
+const PostsTable = nextDynamic(() => import("~/components/posts/table"), {
   loading: () => <Loader className="size-5 animate-spin" />,
   ssr: false,
 });
+
+
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   return (

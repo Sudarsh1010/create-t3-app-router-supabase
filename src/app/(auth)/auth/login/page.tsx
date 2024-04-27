@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { SignInForm } from "./_components/sign-in-form";
 import { SignUpForm } from "./_components/sign-up-form";
 
+export const dynamic = 'force-dynamic'
+
 export default async function LoginPage() {
   return (
     <div className="m-auto flex w-full items-center justify-center p-4 md:my-auto md:min-h-screen">
