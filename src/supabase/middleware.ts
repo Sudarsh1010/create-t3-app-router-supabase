@@ -67,7 +67,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname === "/" && !data.user?.id) {
-    redirectUrl.pathname = "/auth/login";
+    redirectUrl.pathname = "/sign-in";
     return NextResponse.redirect(redirectUrl);
   }
 

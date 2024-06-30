@@ -16,8 +16,6 @@ import { type DB } from "~/server/db/types";
 
 import { DeletePost } from "../delete";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
 export type Post = Omit<DB["post"], "id" | "created_at"> & {
   id: number;
   created_at: Date;
