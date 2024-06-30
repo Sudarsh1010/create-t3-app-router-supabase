@@ -18,14 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-const supabase = createClient();
-
 export const Header = () => {
   // client router
   const router = useRouter();
 
   // state
   const [user, setUser] = useState<User | null>(null);
+  const [supabase] = useState(createClient());
 
   // handlers
   const signOut = useCallback(() => {
@@ -33,7 +32,7 @@ export const Header = () => {
       .signOut()
       .then(router.refresh)
       .catch((err) => toast.error(err.message));
-  }, [router]);
+  }, [router, supabase]);
 
   // effects
   useEffect(() => {
@@ -43,7 +42,7 @@ export const Header = () => {
         setUser(res.data.user);
       })
       .catch(signOut);
-  }, [signOut]);
+  }, [signOut, supabase]);
 
   if (!user) {
     return null;
@@ -72,9 +71,6 @@ export const Header = () => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {/* <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
-          <DropdownMenuSeparator /> */}
           <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

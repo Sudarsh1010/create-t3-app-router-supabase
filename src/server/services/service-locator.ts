@@ -10,6 +10,7 @@ export class ServiceLocator {
 
   static {
     this._cache = {};
+    this._repoCache = {};
   }
 
   static getService(name: string) {
