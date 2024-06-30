@@ -1,50 +1,40 @@
 import { z } from "zod";
 
-import { createPostSchema } from "~/components/posts/create/schema";
+import { createPostSchema } from "~/app/_lib/validation-schema/posts/create";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
+import { PostsService } from "~/server/services/posts-service";
+import { ServiceLocator } from "~/server/services/service-locator";
 
 export const postRouter = createTRPCRouter({
   create: privateProcedure
     .input(createPostSchema)
-    .mutation(async ({ ctx: { db, user }, input }) => {
-      await db
-        .insertInto("post")
-        .values({
-          name: input.name,
-          updated_at: new Date(),
-          user_id: user.id,
-        })
-        .execute();
-      return;
+    .mutation(async ({ ctx: { user }, input }) => {
+      const postsService: PostsService = ServiceLocator.getService(
+        PostsService.name,
+      );
+      postsService.createPost({ name: input.name, user_id: user.id });
     }),
 
-  getLatest: privateProcedure.query(({ ctx: { db, user } }) => {
-    return db
-      .selectFrom("post")
-      .where("user_id", "=", user.id)
-      .orderBy("created_at desc")
-      .selectAll()
-      .limit(1)
-      .executeTakeFirst();
+  getLatest: privateProcedure.query(({ ctx: { user } }) => {
+    const postsService: PostsService = ServiceLocator.getService(
+      PostsService.name,
+    );
+    return postsService.getLatest(user.id);
   }),
 
-  all: privateProcedure.query(({ ctx: { db, user } }) => {
-    return db
-      .selectFrom("post")
-      .where("user_id", "=", user.id)
-      .orderBy("created_at desc")
-      .selectAll()
-      .limit(10)
-      .execute();
+  all: privateProcedure.query(({ ctx: { user } }) => {
+    const postsService: PostsService = ServiceLocator.getService(
+      PostsService.name,
+    );
+    return postsService.getPosts(user.id);
   }),
 
   delete: privateProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ ctx: { db }, input: { id } }) => {
-      return await db
-        .deleteFrom("post")
-        .where("id", "=", id)
-        .returning("id")
-        .executeTakeFirst();
+    .mutation(async ({ ctx: { user }, input: { id } }) => {
+      const postsService: PostsService = ServiceLocator.getService(
+        PostsService.name,
+      );
+      return postsService.deletePost({ postId: id, userId: user.id });
     }),
 });

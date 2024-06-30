@@ -19,9 +19,6 @@ const config = {
     "@typescript-eslint/consistent-type-imports": "error", // Ensure `import type` is used when it's necessary
     "@typescript-eslint/no-unused-vars": "off",
 
-    "max-params": ["error", 3],
-    "max-lines-per-function": ["error", 70],
-
     "react/destructuring-assignment": "off", // Vscode doesn't support automatically destructuring, it's a pain to add a new variable
     "react/require-default-props": "off", // Allow non-defined react props as undefined
 
@@ -48,4 +45,5 @@ const config = {
     ],
   },
 };
+
 module.exports = config;

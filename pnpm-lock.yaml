@@ -104,6 +104,12 @@ importers:
       zod:
         specifier: ^3.23.4
         version: 3.23.4
+      zsa:
+        specifier: ^0.5.0
+        version: 0.5.0(zod@3.23.4)
+      zsa-react:
+        specifier: ^0.2.0
+        version: 0.2.0(react@18.2.0)(zod@3.23.4)
     devDependencies:
       '@types/eslint':
         specifier: ^8.56.2
@@ -3057,6 +3063,17 @@ packages:
 
   zod@3.23.4:
     resolution: {integrity: sha512-/AtWOKbBgjzEYYQRNfoGKHObgfAZag6qUJX1VbHo2PRBgS+wfWagEY2mizjfyAPcGesrJOcx/wcl0L9WnVrHFw==}
+
+  zsa-react@0.2.0:
+    resolution: {integrity: sha512-l4JZGl7pT7O33Fb5W2moMP0C8lhfvUGRoOWLoxeuqQiLfpGO6hRx6XlZuWzNLYlkPU8Nf2HrafXipqwSaGd+1Q==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      zod: ^3.23.5
+
+  zsa@0.5.0:
+    resolution: {integrity: sha512-SHh5cHjvi9uRnGhsHXUDYvYeSg8N7esgwrZVhIyGc5VR2UlI7S1mXsCGqO7nLIMOcDk4ULfB5SYLcmpai5auQw==}
+    peerDependencies:
+      zod: ^3.23.5
 
 snapshots:
 
@@ -6279,3 +6296,13 @@ snapshots:
       readable-stream: 3.6.2
 
   zod@3.23.4: {}
+
+  zsa-react@0.2.0(react@18.2.0)(zod@3.23.4):
+    dependencies:
+      react: 18.2.0
+      zod: 3.23.4
+      zsa: 0.5.0(zod@3.23.4)
+
+  zsa@0.5.0(zod@3.23.4):
+    dependencies:
+      zod: 3.23.4

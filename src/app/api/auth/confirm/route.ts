@@ -1,9 +1,19 @@
-import type { User } from "@supabase/supabase-js";
-import { type EmailOtpType } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
+import type { EmailOtpType, User } from "@supabase/supabase-js";
+import type { NextURL } from "next/dist/server/web/next-url";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { db } from "~/server/db";
-import { createClient } from "~/supabase/server";
+import { AuthenticationService } from "~/server/services/authentication-service";
+import { ServiceLocator } from "~/server/services/service-locator";
+
+interface IUser extends User {
+  user_metadata: { first_name: string; last_name?: string };
+}
+
+const handleErrorRedirect = (url: NextURL) => {
+  url.pathname = "/error";
+  return NextResponse.redirect(url);
+};
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -15,49 +25,29 @@ export async function GET(request: NextRequest) {
   redirectTo.pathname = next;
   redirectTo.searchParams.delete("token_hash");
   redirectTo.searchParams.delete("type");
+  redirectTo.searchParams.delete("next");
 
-  if (token_hash && type) {
-    const supabase = createClient();
-
-    const { data, error } = await supabase.auth.verifyOtp({
-      type: type,
-      token_hash,
-    });
-
-    if (!error && data.user) {
-      try {
-        if (type === "signup") {
-          interface user_metadata {
-            first_name: string;
-            last_name?: string;
-          }
-
-          const { email, user_metadata } = data.user as User & {
-            user_metadata: user_metadata;
-          };
-
-          await db
-            .insertInto("user")
-            .values({
-              first_name: user_metadata.first_name,
-              last_name: user_metadata.last_name,
-              email: email!,
-              updated_at: new Date(),
-              id: data.user.id,
-            })
-            .executeTakeFirstOrThrow();
-        }
-      } catch (error) {
-        redirectTo.searchParams.delete("next");
-        return NextResponse.redirect(redirectTo);
-      }
-
-      redirectTo.searchParams.delete("next");
-      return NextResponse.redirect(redirectTo);
-    }
+  if (!token_hash || !type) {
+    return handleErrorRedirect(redirectTo);
   }
 
-  // return the user to an error page with some instructions
-  redirectTo.pathname = "/error";
+  const authService: AuthenticationService = ServiceLocator.getService(
+    AuthenticationService.name,
+  );
+
+  const data = await authService.verifyOtp(type, token_hash);
+  if (!data.user) {
+    return handleErrorRedirect(redirectTo);
+  }
+
+  try {
+    if (type === "signup") {
+      const { id, email, user_metadata } = data.user as IUser;
+      await authService.createUser({ ...user_metadata, email: email!, id });
+    }
+  } catch (error) {
+    return handleErrorRedirect(redirectTo);
+  }
+
   return NextResponse.redirect(redirectTo);
 }

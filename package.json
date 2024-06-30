@@ -44,7 +44,9 @@
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.23.4"
+    "zod": "^3.23.4",
+    "zsa": "^0.5.0",
+    "zsa-react": "^0.2.0"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.2",
