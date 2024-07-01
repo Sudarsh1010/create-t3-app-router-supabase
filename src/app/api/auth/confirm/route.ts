@@ -3,7 +3,6 @@ import type { NextURL } from "next/dist/server/web/next-url";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { AuthenticationService } from "~/server/services/authentication-service";
 import { ServiceLocator } from "~/server/services/service-locator";
 
 interface IUser extends User {
@@ -31,10 +30,7 @@ export async function GET(request: NextRequest) {
     return handleErrorRedirect(redirectTo);
   }
 
-  const authService: AuthenticationService = ServiceLocator.getService(
-    AuthenticationService.name,
-  );
-
+  const authService = ServiceLocator.getService("AuthenticationService");
   const data = await authService.verifyOtp(type, token_hash);
   if (!data.user) {
     return handleErrorRedirect(redirectTo);

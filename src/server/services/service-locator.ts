@@ -4,47 +4,76 @@ import { PostsRepository } from "~/server/repositories/posts-repository";
 import { AuthenticationService } from "./authentication-service";
 import { PostsService } from "./posts-service";
 
-export class ServiceLocator {
-  private static _cache: Record<string, any>;
-  private static _repoCache: Record<string, any>;
+interface ServiceMap {
+  AuthenticationService: AuthenticationService;
+  PostsService: PostsService;
+}
 
-  static {
-    this._cache = {};
-    this._repoCache = {};
+interface RepositoryMap {
+  PostsRepository: PostsRepository;
+  AuthRepository: AuthRepository;
+}
+
+export class ServiceLocator {
+  private static _serviceCache: Partial<Record<keyof ServiceMap, any>> = {};
+  private static _repositoryCache: Partial<Record<keyof RepositoryMap, any>> =
+    {};
+
+  private static _serviceFactory: {
+    [K in keyof ServiceMap]: () => ServiceMap[K];
+  } = {
+    AuthenticationService: () => {
+      const authenticationRepository =
+        ServiceLocator.getOrCreateRepository("AuthRepository");
+      return new AuthenticationService(authenticationRepository);
+    },
+    PostsService: () => {
+      const collectionsRepository =
+        ServiceLocator.getOrCreateRepository("PostsRepository");
+      return new PostsService(collectionsRepository);
+    },
+  };
+
+  private static _repositoryFactory: {
+    [K in keyof RepositoryMap]: () => RepositoryMap[K];
+  } = {
+    PostsRepository: () => new PostsRepository(),
+    AuthRepository: () => new AuthRepository(),
+  };
+
+  private static getOrCreateRepository<T extends keyof RepositoryMap>(
+    name: T,
+  ): RepositoryMap[T] {
+    let repository = this._repositoryCache[name];
+
+    if (repository) {
+      console.log(
+        `${name} repository is cached! Returning the cached version.`,
+      );
+      return repository;
+    }
+
+    console.log(`Creating ${name} repository...`);
+    repository = this._repositoryFactory[name]();
+
+    console.log(`Caching ${name} repository...`);
+    this._repositoryCache[name] = repository;
+    return repository as RepositoryMap[T];
   }
 
-  static getService(name: string) {
-    const service = this._cache[name];
+  static getService<T extends keyof ServiceMap>(name: T): ServiceMap[T] {
+    const service = this._serviceCache[name];
 
-    if (!!service) {
+    if (service) {
+      console.log(`${name} service is cached! Returning the cached version.`);
       return service;
     }
 
-    if (name === AuthenticationService.name) {
-      let authRepository: AuthRepository = this._repoCache[AuthRepository.name];
+    console.log(`Creating ${name} service...`);
+    const createdService = this._serviceFactory[name]();
 
-      if (!!!authRepository) {
-        authRepository = new AuthRepository();
-        this._repoCache[AuthRepository.name] = authRepository;
-      }
-
-      const authService = new AuthenticationService(authRepository);
-      this._cache[name] = authService;
-      return authService;
-    }
-
-    if (name === PostsService.name) {
-      let postsRepository: PostsRepository =
-        this._repoCache[PostsRepository.name];
-
-      if (!!!postsRepository) {
-        postsRepository = new PostsRepository();
-        this._repoCache[PostsRepository.name] = postsRepository;
-      }
-
-      const postsSerivce = new PostsService(postsRepository);
-      this._cache[name] = postsSerivce;
-      return postsSerivce;
-    }
+    console.log(`Caching ${name} service...`);
+    this._serviceCache[name] = createdService;
+    return createdService;
   }
 }
